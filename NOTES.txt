@@ -1,0 +1,84 @@
+
+roscore                                         <- Master node
+rosnode info /rosout                            <- ROS tool for node info
+rosrun [package_name] [node_name]               <- Runs a node from given package
+rosnode list
+rosrun turtlesim turtlesim_node __name:=my_turtle
+
+Understanding ROS Topics - Turtle Bot
+
+
+rosrun rqt_graph rqt_graph                      <- Node graph
+
+rostopic echo [topic]                           <- Shows data published on topic
+rostopic type [topic]                           <- Returns type of topic published
+rostopic pub [topic] [msg_type] [args]          <- Publishes data on topic currently advertised
+rostopic hz [topic]                             <- Reports rate at which data is published (red pub, green sub)
+
+rosrun rqt_plot rqt_plot                        <- Graph plot
+
+rosservice list                                 <-
+rosservice type [service]                       <-
+
+
+------------------------------------------------------------
+QGroundControl Installation           https://docs.qgroundcontrol.com/en/getting_started/download_and_install.html
+------------------------------------------------------------
+
+Downloaded QGroundControl.AppImage
+
+Followed by cmds:
+  chmod +x ./QGroundControl.AppImage
+  ./QGroundControl.AppImage
+
+sudo usermod -a -G dialout $USER
+sudo apt-get remove modemmanager
+then again ./QGroundControl.AppImage
+
+------------------------------------------------------------
+Installing Gazebo with ROS            http://dev.px4.io/en/setup/dev_env_linux.html#gazebo-with-ros
+------------------------------------------------------------
+Downloaded ubuntu_sim_ros_gazebo.sh
+  source ubuntu_sim_ros_gazebo.sh
+
+
+------------------------------------------------------------
+Building PX4                        http://dev.px4.io/en/setup/building_px4.html
+------------------------------------------------------------
+Fork PX4 SW from following gihub to personal github:
+  - Original PX4 source (Firmware repos): https://github.com/PX4/Firmware
+  - My GitHub:  https://github.com/PX4/Firmware
+
+git clone https://github.com/rsands616/Firmware.git
+cd Firmware
+
+
+---------------------------------------------------------------------------------------------------------------------------
+make px4_fmu-v4_default                                                                                                       <---- WHERE IM CURRENTLY AT
+
+ryan@ryan-UX310UA:~$ make px4_sitl gazebo
+make: *** No rule to make target 'px4_sitl'. Stop.
+
+roslaunch mavros px4.launch fcu_url:="udp://:14540@127.0.0.1:14557"
+
+
+
+Link to MAVROS: https://github.com/mavlink/mavros/tree/master/mavros#installation
+Link to MAVROS Installation tutorial: http://dev.px4.io/en/ros/mavros_installation.html
+
+Have already done install: sudo apt-get install ros-kinetic-mavros ros-kinetic-mavros-extras
+Think I've run this, but re-run to double check: sudo apt-get install python-catkin-tools python-rosinstall-generator -y
+
+
+Launching Gazebo and ROS tutorial: http://dev.px4.io/en/simulation/ros_interface.html
+General simulation tutorial: https://dev.px4.io/en/simulation/
+PX4 intro page: https://docs.px4.io/en/
+
+
+Error mounting /dev/sda1 at /media/ryan/DATA: Command-line `mount -t "ntfs" -o "uhelper=udisks2,nodev,nosuid,uid=1000,gid=1000" "/dev/sda1" "/media/ryan/DATA"' exited with non-zero exit status 14: The disk contains an unclean file system (0, 0).
+Metadata kept in Windows cache, refused to mount.
+Failed to mount '/dev/sda1': Operation not permitted
+The NTFS partition is in an unsafe state. Please resume and shutdown
+Windows fully (no hibernation or fast restarting), or mount the volume
+read-only with the 'ro' mount option.
+
