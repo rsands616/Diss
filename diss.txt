@@ -1,0 +1,225 @@
+Linux Bits Setup Bits:
+ODroid
+    OS image in Ondrive - issues with other images
+    No WiFi module - rpi chosen as a result
+    openssh
+            sudo apt-get install openssh-server
+            sudo nano /etc/ssh/sshd_config
+R-Pi
+    OS image in Onedirve - issues with kernel, needed to use ubiquity
+    Configure /etc/hosts for ssh machine GCS
+    ifconfig
+    GiitHib
+          sudo apt-get install git
+          git clone https://github.com/PX4/Firmware
+    raspi-config - max OS size to SD card
+
+
+--------------------------------------------------------------------------
+
+ROS Setup Bits:
+GCS
+    Installing ROS on GCS : https://dev.px4.io/en/setup/dev_env_linux.html#gazebo-with-ros # Comes with ROS, Firmware, MAVROS, MAVLink
+    Installing QGroundControl : https://docs.qgroundcontrol.com/en/getting_started/download_and_install.html
+
+    Used listener and talker nodes to establish communication
+
+R-Pi
+    Migrated to catkin_build : https://catkin-tools.readthedocs.io/en/latest/migration.htmllsusb
+    Installing MAVROS ans MAVLink : https://dev.px4.io/en/ros/mavros_installation.html  - https://raw.githubusercontent.com/PX4/Devguide/master/build_scripts/ubuntu_sim_ros_gazebo.sh
+
+  ~/.bashrc
+          source /opt/ros/kinetic/setup.bash
+          source /home/ubuntu/catkin_ws/devel_cb/setup.bash
+
+          export ROS_PARALLEL_JOBS=-j2 # Limit the number of compile threads due to memory limits
+          source /opt/ros/kinetic/setup.bash
+
+          Appended following lines into ROS variable setups (dependant on network setup)
+          #Lab/Phone Network
+          #export ROS_HOSTNAME=192.168.43.16
+          #export ROS_MASTER_URI=http://192.168.43.230:11311
+          #export ROS_IP=192.168.43.16
+
+          #Lab Wireless Netowrk Setup
+          #export ROS_HOSTNAME=192.168.1.183
+          #export ROS_MASTER_URI=http://192.168.1.96:11311
+          #export ROS_IP=192.168.1.183
+
+                                                                                              Considered .local approach, however compatibility issues if machine names change - used personal machine
+                                                                                              127.0.0.1
+                                                                                              export HOSTNAME=ryan-UX310UA.local
+                                                                                              export ROS_MASTER_URI=http://ryan-UX310UA.local:11311
+                                                                                              export ROS_IP=192.168.0.2to 921600 baud rate (8N1)
+
+
+  /etc/udev/rules.d/99-pixhawk.rules
+          SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", SYMLINK+="ttyPixhawk"
+
+  nano /opt/ros/kinetic/share/mavros/launch/px4.launch
+  name="fcu_url" default="/dev/ttyPixhawk:921600"
+
+  usermod -a -G tty ros-user
+  usermod -a -G dialout ros-user            OPTIONAL
+  lsusb
+  http://wiki.ros.org/ROS/Tutorials/MultipleMachines
+
+  Login to WiFi before password: https://askubuntu.com/questions/16376/connect-to-network-before-user-login
+
+  https://ardupilot.github.io/MAVProxy/html/getting_started/starting.html - mavproxy bits
+
+
+Pixhawk
+  Set SYS_COMPANION to 921600 baud rate (8N1)
+
+--------------------------------------------------------------------------
+
+Simulation Bits:
+    GCS
+        Firmware Install : https://github.com/PX4/Firmware
+
+        <rotorVelocitySlowdownSim>20</rotorVelocitySlowdownSim> on /home/ryan/Firmware/Tools/sitl_gazebo/models/plane/plane.sdf
+            <iters>4</iters> on /home/ryan/Firmware/Tools/sitl_gazebo/worlds/plane.world
+
+            Added ekf2/rover file to /posix-configs/SITL/init/ekf2/rover          < ----- 1
+            Add:      param set SITL_UDP_PRT 14560          to rover file
+
+            SITL.sh file
+
+
+HITL doesn't support fixed-wing
+GitHub of added plane file fo SITL - https://github.com/PX4/Firmware/blob/4d0964385b84dc91189f377aafb039d10850e5d6/posix-configs/SITL/init/ekf2/rover
+
+
+
+Command Line
+
+r-pi: roslaunch mavros px4.launch fcu_url:="/dev/ttyPixhawk:921600" gcs_url:="udp://@192.168.1.96:14550"
+GCS:  mavproxy.py --master=/dev/ttyPixhawk --baudrate 921600 --aircraft Myplane
+      enter mode n for mode transition, see n options with just mode command
+--------------------------------------------------------------------------
+#################### Issues ########################
+
+Simulator Unable to connect on TCP port 4560 < ---- 1
+Simulator gazebo time sync (is /clock being published? - rosparam get use_sim_time) issues: setting use_sim_time to true
+TM : Time jump detected. Resetting time synchroniser. MAVROS
+WARNING: no messages received and simulated time is active.Is /clock being published?
+make: *** No rule to make target 'px4_sitl'. Stop. - No plane files
+---------------------------------------------------------------------------
+ssh into device not working with correct password : not using correct username
+ensure ROS being sourced in devel folder
+Mixed up TX RX connection
+Why I shose usb over uart
+WARNING: topic [/mavros/local_position/pose] does not appear to be published yet - MAVROS topics not publishing
+virtual memory exhausted: Cannot allocate memory
+
+
+Mentions MAVLink startup script
+
+https://answers.ros.org/question/271620/importerror-no-module-named-xxxxmsg/
+http://jbohren.com/tutorials/2014-02-12-gentle-catkin-intro/
+https://gist.github.com/annesteenbeek/5370f62cf85bb9d6825327bff1b85293
+https://gist.githubusercontent.com/annesteenbeek/5370f62cf85bb9d6825327bff1b85293/raw/6b674a03f661d349b2c5514dddee4177af2ac4e3/offb_node.py
+https://dev.px4.io/en/ros/mavros_offboard.html
+https://www.cse.sc.edu/~jokane/agitr/agitr-letter-start.pdf
+http://ardupilot.org/dev/docs/making-a-mavlink-wifi-bridge-using-the-raspberry-pi.html
+https://ardupilot.github.io/MAVProxy/html/getting_started/starting.html
+https://ardupilot.github.io/MAVProxy/html/getting_started/mavbridge.html
+https://ardupilot.github.io/MAVProxy/html/getting_started/multi.html
+
+
+
+https://github.com/PX4/Firmware/issues/1288
+http://discuss.px4.io/t/mavros-ros-and-pixhawk/3136
+https://404warehouse.net/2015/12/20/autopilot-offboard-control-using-mavros-package-on-ros/
+http://discuss.px4.io/t/mavros-ros-and-pixhawk/3136/5
+
+
+
+
+############## Topics on GCS and Pi & QGroundcontrol ##############
+roscore - tab 1
+./AppImage  - tab 2
+roslaunch mavros px4.launch fcu_url:="/dev/ttyPixhawk:921600" gcs_url:="udp://@192.168.43.35:14550" - tab 3
+rostopic list - tab 4
+#################################################
+############## nodes ##############
+rosrun ros_px4_pkg battery.py - tab 4
+rosrun ros_px4_pkg mag.py
+rostopic echo /mavros/global_position/raw/fix
+rosrun ros_px4_pkg imu.py
+rosnode list - tab 5
+##################################################
+############## rqt_plot bits ##############
+rqt_plot /mavros/altitude/local - tab 4
+rqt_plot /mavros/imu/data/linear_acceleration/x
+rqt_plot /mavros/imu/data/linear_acceleration/y
+##################################################
+############## Offboard mode ##############
+rostopic echo /mavros/state/header/seq & rostopic echo /mavros/state/mode - tab 4
+rosrun mavros offb_node - tab 5
+##################################################
+############## mavproxy.py on GCS ##############
+roscore
+roslaunch mavros px4.launch fcu_url:="/dev/ttyPixhawk:921600" gcs_url:="udp://@192.168.43.35:14550"
+mavproxy.py --master=/dev/ttyPixhawk --baudrate 921600 --aircraft Myplane
+or
+mavproxy.py --master=udpout:192.168.42.1:14550 --baudrate 921600 --aircraft Myplane
+##################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+source /opt/ros/kinetic/setup.bash
+source /home/ubuntu/catkin_ws/devel_cb/setup.bash
+#source /etc/ubiquity/env.sh
+export ROS_PARALLEL_JOBS=-j2 # Limit the number of compile threads due to memory limits
+source /opt/ros/kinetic/setup.bash
+# export ROS_HOSTNAME=ubiquityrobot
+# export ROS_MASTER_URI=http://ryan-UX310UA.local:11311
+# export ROS_IP=192.168.0.28
+source ~/catkin_ws/devel_cb/setup.bash
+
+#Student Dev Network
+#export ROS_HOSTNAME=192.168.0.28
+#export ROS_MASTER_URI=http://192.168.0.13:11311
+#export ROS_IP=192.168.0.28
+
+#Student Mobile Network
+#export ROS_HOSTNAME=192.168.43.16
+#export ROS_MASTER_URI=http://192.168.43.35:11311
+#export ROS_IP=192.168.43.16
+
+#Lab Wireless Netowrk Setup
+export ROS_HOSTNAME=192.168.1.183
+export ROS_MASTER_URI=http://192.168.1.96:11311
+export ROS_IP=192.168.1.183
+
+
+#Lab/Phone Network
+#export ROS_HOSTNAME=192.168.43.16
+#export ROS_MASTER_URI=http://192.168.43.230:11311
+#export ROS_IP=192.168.43.16
+
+
