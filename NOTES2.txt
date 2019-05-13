@@ -1,0 +1,160 @@
+Added ekf2/rover file to /posix-configs/SITL/init/ekf2/rover
+Add:      param set SITL_UDP_PRT 14560          to rover file
+
+
+
+roslaunch mavros px4.launch fcu_url:="udp://:14540@192.168.1.36:14557"
+no_sim=2 roslaunch px4 posix_sitl.launch
+ export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:$(pwd)/Tools/sitl_gazebo
+rqt_topic
+rqt_topic
+
+
+Due to low prcessing power, gazebo model needed to be changed:
+      <rotorVelocitySlowdownSim>20</rotorVelocitySlowdownSim> on /home/ryan/Firmware/Tools/sitl_gazebo/models/plane/plane.sdf
+          <iters>4</iters> on /home/ryan/Firmware/Tools/sitl_gazebo/worlds/plane.world
+
+
+
+
+
+
+Topics not working
+nmea_topic_driver
+rosparam set use_sim_time false?????????????
+
+rostopic echo /mavros/setpoint_attitude/cmd_vel
+
+
+https://github.com/mavlink/mavros/issues/88
+Landing better controlled with cmd_velocity topic
+
+https://answers.ros.org/question/253021/controlling-gazebo-timing/
+use_set_time
+
+http://wiki.ros.org/mavros
+
+
+http://ubuntuhandbook.org/index.php/2016/04/enable-ssh-ubuntu-16-04-lts/
+
+
+-------------------------------------------------------------------------------
+
+
+http://wiki.ros.org/ROS/NetworkSetup
+http://wiki.ros.org/ROS/Tutorials/MultipleMachines
+https://www.terraelectronica.ru/pdf/show?pdf_file=%2Fz%2FDatasheet%2FO%2Fodroid-xu4l.pdf
+https://github.com/ut-ims-robotics/tutorials/wiki/Running-ROS-over-multiple-computers
+https://answers.ros.org/question/38694/running-ros-across-multiple-machines/
+https://askubuntu.com/questions/343514/how-do-i-edit-the-etc-hosts-file
+http://wiki.ros.org/kinetic/Installation/Ubuntu
+https://askubuntu.com/questions/171521/what-is-the-password-for-ssh-rootlocalhost
+https://superuser.com/questions/543626/ssh-permission-denied-on-correct-password-authentication
+https://www.howtogeek.com/66214/how-to-forward-ports-on-your-router/
+http://library.isr.ist.utl.pt/docs/roswiki/ROS(2f)Troubleshooting.html
+http://wiki.ros.org/ROS/NetworkSetup
+
+ifconfig
+setup ssh using
+/etc/hosts
+export HOSTNAME=ryan-UX310UA.local
+export ROS_MASTER_URI=http://ryan-UX310UA.local:11311
+export ROS_IP=192.168.0.22
+
+Needed to us -j2 for compiling MAVROS
+rosrun ros_px4_pkg listener.py
+ssh odroid@192.168.0.22
+https://raw.githubusercontent.com/ros/ros_tutorials/kinetic-devel/rospy_tutorials/001_talker_listener/listener.py
+https://raw.githubusercontent.com/ros/ros_tutorials/kinetic-devel/rospy_tutorials/001_talker_listener/talker.py
+
+
+
+scp scripts/ slave:/home/odroid/catkin_ws/src/ros_px4_pkg
+
+ifconfig
+history
+export ROS_IP=192.168.0.22
+echo $ROS_IP
+http://localhost:11311
+
+http://ryan-UX310UA.local:11311
+ping 192.168.0.22
+
+
+127.0.0.1
+export HOSTNAME=ryan-UX310UA.local
+export ROS_MASTER_URI=http://ryan-UX310UA.local:11311
+export ROS_IP=192.168.0.22
+
+export HOSTNAME=ryan-UX310UA.local
+export ROS_MASTER_URI=http://127.0.0.1:11311
+export ROS_IP=192.168.0.22
+
+
+
+----------------------------------------------------------
+mavlink - run on raspberry
+----------------------------------------------------------
+sudo -s
+mavproxy.py --master=/dev/ttyPixhawk --baudrate 921600 --aircraft Myplane
+param show ARMING_CHECK
+param set ARMING_CHECK 0
+arm throttle --- Used to show parameters / set
+
+roslaunch mavros px4.launch
+roslaunch mavros px4.launch fcu_url:="/dev/ttyPixhawk:921600"
+
+----------------------------------------------------------
+mavlink - run on GCS
+----------------------------------------------------------
+roslaunch mavros px4.launch fcu_url:="udp://:ubuntu@127.168.0.28:14560"
+roslaunch mavros px4.launch fcu_url:="udp://:14540@127.168.0.28:14557"
+
+
+roslaunch mavros px4.launch fcu_url:="/dev/ttyPixhawk:921600" gcs_url:="udp://@127.168.0.28:14550"
+
+roslaunch mavros px4.launch fcu_url:="/dev/ttyPixhawk:921600" gcs_url:="udp://:ubuntu@127.168.0.28:14550"
+
+nano /opt/ros/kinetic/share/mavros/launch/px4.launch
+----------------------------------------------------------
+name="fcu_url" default="/dev/ttyPixhawk:921600"
+
+
+rostopic echo /mavros/local_position/pose
+rostopic echo mavros/altitude
+rostopic echo /mavros/battery
+rostopic echo /mavros/state
+rostopic echo /mavros/imu/static_pressure
+
+roslaunch mavros px4.launch fcu_url:="udp://:14540@192.168.0.13:14557"
+
+roslaunch mavros px4.launch fcu_url:=/dev/ttyUSB0:921600 gcs_url:=udp://@127.0.0.1:14550
+
+
+
+
+https://ardupilot.github.io/MAVProxy/html/getting_started/mavbridge.html
+
+
+
+
+roslaunch mavros px4.launch fcu_url:="/dev/ttyPixhawk:921600" gcs_url:="udp://@127.168.0.13:14551"
+
+roslaunch mavros px4.launch fcu_url:="/dev/ttyPixhawk:921600" gcs_url:="udp://@127.168.0.13:14551"
+rostopic echo -na /diagnostics
+/mavros/altitude/local
+mavproxy.py –master=192.168.42.1:14550
+
+rqt_plot /mavros/altitude/local
+rqt_plot /mavros/imu/data/linear_acceleration/x
+rqt_plot /mavros/imu/data/linear_acceleration/y
+
+
+make posix gazebo_plane
+-------------------------------------------------------------------
+make px4_sitl_default gazebo_plane
+source ~/catkin_ws/devel/setup.bash
+source Tools/setup_gazebo.bash $(pwd) $(pwd)/build/posix_sitl_default
+export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:$(pwd)
+export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:$(pwd)/Tools/sitl_gazebo
+roslaunch px4 posix_sitl.launch
